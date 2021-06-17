@@ -12,14 +12,11 @@ export default {
       renderer: null,
       scene: null,
       camera: null
-      // plane: null
     }
   },
   methods: {
     init: function() {
       this.scene = new THREE.Scene()
-      // this.plane = new THREE.Mesh(geometry, material)
-
       this.camera = new THREE.PerspectiveCamera(
         75,
         window.innerWidth / window.innerHeight,

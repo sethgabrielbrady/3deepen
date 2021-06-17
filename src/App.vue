@@ -1,16 +1,14 @@
 <template>
   <div>
-    <ThreeTest/>
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
-import ThreeTest from '@/components/ThreeTest.vue'
 
 export default {
   name: 'Home',
   components: {
-    ThreeTest
   }
 }
 </script>
