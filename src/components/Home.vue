@@ -1,9 +1,8 @@
 <template>
   <div>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/three-test">Three Test</router-link> |
-    <router-view/>
+    <p>Home</p>
   </div>
+
 </template>
 
 <script>
