@@ -36,30 +36,29 @@ export default {
   },
   methods: {
     init: function() {
-      console.log("canvas", this.canvas)
-      // let aspect = this.canvas.width / this.canvas.height;
 
-      let aspect = window.innerWidth / window.innerHeight;
-      this.camera = new THREE.OrthographicCamera( this.frustumSize * aspect / - 2, this.frustumSize * aspect / 2, this.frustumSize / 2, this.frustumSize / - 2, 1, 2000 );
-      this.camera.position.y = 400;
+     //camera
+     this.camera = new THREE.PerspectiveCamera(50,
+      window.innerWidth/window.innerHeight, 0.1, 2000 ); // Specify camera type like this
+      this.camera.position.set(0,2.5,2.5); // Set position like this
+      this.camera.lookAt(new THREE.Vector3(-.5,0,0)); // Set look at coordinate like this
 
-      // this.camera = new THREE.PerspectiveCamera(
-      //   75,
-      //   window.innerWidth / window.innerHeight,
-      //   0.1,
-      //   1000
-      // )
+      this.camera.position.z = 1000;
+      this.camera.position.y = 1000;
+      // this.camera.position.x = 100;
+
 
       this.scene = new THREE.Scene()
       this.scene.background = new THREE.Color( 0xf0f0f0 );
+
 
       // Grid
       this.gridHelper = new THREE.GridHelper(1000, 12);
       this.scene.add( this.gridHelper );
 
       //paddle
-      let paddleGeo = new THREE.BoxGeometry( 50, 50, 170 );
-      let paddleMatr = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
+      const paddleGeo = new THREE.BoxGeometry( 50, 50, 70 );
+      const paddleMatr = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
       this.paddle = new THREE.Mesh( paddleGeo, paddleMatr );
       this.paddle.position.x = 500;
       this.paddle.position.y = 50;
@@ -99,34 +98,24 @@ export default {
       this.scene.add(light2);
 
       // renderer
-      this.renderer = new THREE.WebGLRenderer({canvas: this.myCanvas});
+      this.renderer = new THREE.WebGLRenderer();
       this.renderer.setClearColor(0x000000);
       this.renderer.setPixelRatio(window.devicePixelRatio);
       this.renderer.setSize(window.innerWidth, window.innerHeight);
 
       console.log("this.renderer.domElement",this.renderer.domElement)
-      // this.container.appendChild(this.renderer.domElement );
+      document.body.appendChild(this.renderer.domElement)
+
 
       // window.addEventListener( 'resize', onWindowResize, false );
-
-
-        // set this for fixed camera
-      this.camera.position.x = Math.cos(100) * 400;
-      this.camera.position.z = Math.sin(100) * 400;
 
     },
     animate: function() {
       requestAnimationFrame( this.animate );
-      // this.render();
+      this.render();
       this.renderer.render(this.scene, this.camera)
     },
-    // set this for fixed camera
-    // this.camera.position.x = Math.cos(100) * 400;
-    // this.camera.position.z = Math.sin(100) * 400;
-
     col: function() {
-      this.camera.position.x = Math.cos(100) * 400;
-      this.camera.position.z = Math.sin(100) * 400;
 
       this.ball.position.x += this.dx;
       this.ball.position.z += this.dy;
@@ -154,9 +143,6 @@ export default {
         this.dy = -this.dy;
       }
     },
-    // document.addEventListener("keydown", keyDownHandler, false);
-    // document.addEventListener("keyup", keyUpHandler, false);
-
     render: function() {
       if(this.rightPressed && this.paddle.position.z < 500-70) {
         this.paddle.position.z += 14;
@@ -203,15 +189,16 @@ export default {
       }
 
       // unset this for rotating camera
-      // var timer = Date.now() * 0.0001;
-      // camera.position.x = Math.cos(timer) * 800;
-      // camera.position.z = Math.sin(timer) * 800;
+      const timer = Date.now() * 0.0001;
+      this.camera.position.x = Math.cos(timer) * 800;
+      this.camera.position.z = Math.sin(timer) * 800;
       this.camera.lookAt( this.scene.position );
       this.renderer.render( this.scene, this.camera );
-    }
 
-  },
-  watch: {
+      // listed for up paddle movement
+      document.addEventListener("keydown", this.keyDownHandler, false);
+      document.addEventListener("keyup", this.keyUpHandler, false);
+    },
     keyDownHandler: function(e) {
       if(e.keyCode == 37) {
         this.rightPressed = true;
@@ -234,7 +221,10 @@ export default {
       else if(e.keyCode == 38) {
         console.log(this.test);
       }
-    },
+    }
+  },
+  watch: {
+
   },
   mounted() {
     this.init()

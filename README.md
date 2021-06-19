@@ -1,5 +1,7 @@
 # 3deepen
 
+# ThreeJS
+  https://threejs.org/docs/index.html#api/en/cameras/OrthographicCamera
 ## Project setup
 ```
 yarn install

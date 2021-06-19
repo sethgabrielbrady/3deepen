@@ -1,20 +1,20 @@
 <template>
   <div>
+    <p @click="clearCanvas"> test </p>
     <router-link to="/">Home</router-link> |
     <router-link to="/three-test">Three Test</router-link> |
+    <router-link to="/breakout">Breakout</router-link> |
     <router-view/>
   </div>
 </template>
 
 <script>
-import * as THREE from 'three'
-
-
-export default {
-  methods: {
-      init: function() {
-        this.scene = new THREE.Scene()
+  export default {
+    methods: {
+      clearCanvas() {
+        console.log("clear");
+        alert("click");
       }
+    }
   }
-}
 </script>
