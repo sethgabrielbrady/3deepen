@@ -49,6 +49,9 @@ export default {
   mounted() {
     this.init()
     this.animate()
+  },
+  beforeUnmount() {
+    this.renderer.dispose();
   }
 }
 </script>
