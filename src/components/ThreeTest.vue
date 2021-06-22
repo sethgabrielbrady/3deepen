@@ -3,6 +3,7 @@
 </template>
 <script>
 import * as THREE from 'three'
+import test from '../assets/js/test.js'
 
 export default {
   name: 'ThreeTest',
@@ -11,7 +12,8 @@ export default {
       cube: null,
       renderer: null,
       scene: null,
-      camera: null
+      camera: null,
+      test: test
     }
   },
   methods: {
@@ -29,9 +31,12 @@ export default {
       document.body.appendChild(this.renderer.domElement)
 
       const geometry = new THREE.BoxGeometry(1, 1, 1)
-      const material = new THREE.MeshBasicMaterial({ color: 0x0000ff })
+      const loader = new THREE.TextureLoader();
 
-      this.cube = new THREE.Mesh(geometry, material)
+      const material = new THREE.MeshBasicMaterial({
+        map: loader.load('https://threejsfundamentals.org/threejs/resources/images/wall.jpg'),
+      });
+      this.cube = new THREE.Mesh(geometry, material);
       this.scene.add(this.cube)
 
       this.camera.position.z = 5
