@@ -3,7 +3,6 @@
 </template>
 <script>
 import * as THREE from 'three'
-import test from '../assets/js/test.js'
 
 export default {
   name: 'ThreeTest',
@@ -13,7 +12,6 @@ export default {
       renderer: null,
       scene: null,
       camera: null,
-      test: test
     }
   },
   methods: {

@@ -27,16 +27,6 @@ export default {
   methods: {
     init: function() {
 
-     //camera
-    //  this.camera = new THREE.PerspectiveCamera(50,
-    //   window.innerWidth/window.innerHeight, 0.1, 2000 ); // Specify camera type like this
-    //   this.camera.position.set(0,1,1); // Set position like this
-    //   this.camera.lookAt(new THREE.Vector3(0,0,0)); // Set look at coordinate like this
-
-    //   this.camera.position.z = 1000;
-    //   this.camera.position.y = 1000;
-    //   // this.camera.position.x = 100;
-
     this.camera = new THREE.PerspectiveCamera(
         75,
         window.innerWidth / window.innerHeight,
@@ -44,46 +34,28 @@ export default {
         1000
       )
       this.camera.position.z = 800;
-
-
       this.scene = new THREE.Scene()
       this.scene.background = new THREE.Color( 0xf0f0f0 );
-
 
       //textures
       const loader = new THREE.TextureLoader();
       const testTexture = loader.load('https://mk0a2minutetabl7hq7i.kinstacdn.com/wp-content/uploads/2021/04/Sacred-Spring-battle-map-Cropped.jpg');
 
-
       // Grid
-      this.gridHelper = new THREE.GridHelper(1000,12);
-      this.gridHelper.rotation.x = -45.55;
+      this.gridHelper = new THREE.GridHelper(1000,12,0xff0000, 0x0000ff);
+      this.gridHelper.rotation.x = -45.553;
       this.scene.add( this.gridHelper );
 
       // floor
       const geometry = new THREE.PlaneGeometry(1000, 1000)
-
       const material = new THREE.MeshBasicMaterial({
-        map: testTexture,
+        map: testTexture, side: THREE.DoubleSide
       });
       this.floor = new THREE.Mesh(geometry, material);
-
-      // this.floor.position.x = 0;
-      // this.floor.position.y = 0;
-      // this.floor.position.z = 0;
-
-
+      //places the floor plane slightly below the grid helper
+      this.floor.position.z = -1;
       this.scene.add(this.floor)
 
-
-
-      // this.floor.rotation.x = -45.6;
-      // Lights
-      // let ambientLight = new THREE.AmbientLight( 0xf03ff0 );
-      // this.scene.add( ambientLight );
-
-      // let light2 = new THREE.PointLight( 0xffffff );
-      // this.scene.add(light2);
 
       // renderer
       this.renderer = new THREE.WebGLRenderer();
@@ -93,21 +65,13 @@ export default {
 
       document.body.appendChild(this.renderer.domElement)
 
-
     },
     animate: function() {
       this.render();
       this.renderer.render(this.scene, this.camera)
       requestAnimationFrame( this.animate );
-
-
     },
     render: function() {
-
-
-      // requestAnimationFrame( this.animate );
-
-
       // unset this for rotating camera
       // const timer = Date.now() * 0.0002;
       // this.camera.position.x = Math.cos(timer) * 800;
