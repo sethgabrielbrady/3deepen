@@ -37,10 +37,10 @@ export default {
       this.scene = new THREE.Scene()
       this.scene.background = new THREE.Color( 0xf0f0f0 );
 
+
       //textures
       const loader = new THREE.TextureLoader();
-      const testTexture = loader.load('https://mk0a2minutetabl7hq7i.kinstacdn.com/wp-content/uploads/2021/04/Sacred-Spring-battle-map-Cropped.jpg');
-
+      const testTexture = loader.load('https://mk0a2minutetabl7hq7i.kinstacdn.com/wp-content/uploads/2021/02/Celestial-Temple-Battle-Map-preview-Cropped-500x350.jpg');
       // Grid
       this.gridHelper = new THREE.GridHelper(1000,12,0xff0000, 0x0000ff);
       this.gridHelper.rotation.x = -45.553;
