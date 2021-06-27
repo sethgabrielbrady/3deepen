@@ -3,6 +3,8 @@
 </template>
 <script>
 import * as THREE from 'three'
+// import * as OrbitControls from 'three-orbit-controls'
+
 
 export default {
   name: 'Breakout',
@@ -11,12 +13,11 @@ export default {
       container: null,
       stats: null,
       camera: null,
+      controls: null,
       scene: null,
       renderer: null,
       frustumSize: 1000,
-
       floor: null,
-
       gridHelper: null,
       paddleWidth: null,
       test: null,
@@ -63,13 +64,24 @@ export default {
       this.renderer.setPixelRatio(window.devicePixelRatio);
       this.renderer.setSize(window.innerWidth, window.innerHeight);
 
+      // controls
+      // this.controls = new OrbitControls( this.camera, this.renderer.domElement );
+      //controls.update() must be called after any manual changes to the camera's transform
+      // this.camera.position.z = 800;
+
+      // this.controls.update();
+
       document.body.appendChild(this.renderer.domElement)
+
+
 
     },
     animate: function() {
+      // this.controls.update();
       this.render();
       this.renderer.render(this.scene, this.camera)
       requestAnimationFrame( this.animate );
+
     },
     render: function() {
       // unset this for rotating camera
