@@ -5,9 +5,8 @@
 import * as THREE from 'three'
 // import * as OrbitControls from 'three-orbit-controls'
 
-
 export default {
-  name: 'Breakout',
+  name: 'TexturedFloor',
   data() {
     return {
       container: null,
@@ -16,13 +15,8 @@ export default {
       controls: null,
       scene: null,
       renderer: null,
-      frustumSize: 1000,
       floor: null,
-      gridHelper: null,
-      paddleWidth: null,
-      test: null,
-      sc: 0, //score
-      target: null,
+      gridHelper: null
     }
   },
   methods: {
@@ -38,10 +32,10 @@ export default {
       this.scene = new THREE.Scene()
       this.scene.background = new THREE.Color( 0xf0f0f0 );
 
-
       //textures
       const loader = new THREE.TextureLoader();
-      const testTexture = loader.load('https://mk0a2minutetabl7hq7i.kinstacdn.com/wp-content/uploads/2021/02/Celestial-Temple-Battle-Map-preview-Cropped-500x350.jpg');
+      const floorTexture = loader.load('https://mk0a2minutetabl7hq7i.kinstacdn.com/wp-content/uploads/2021/02/Celestial-Temple-Battle-Map-preview-Cropped-500x350.jpg');
+
       // Grid
       this.gridHelper = new THREE.GridHelper(1000,12,0xff0000, 0x0000ff);
       this.gridHelper.rotation.x = -45.553;
@@ -50,13 +44,13 @@ export default {
       // floor
       const geometry = new THREE.PlaneGeometry(1000, 1000)
       const material = new THREE.MeshBasicMaterial({
-        map: testTexture, side: THREE.DoubleSide
+        map: floorTexture, side: THREE.DoubleSide
       });
+
       this.floor = new THREE.Mesh(geometry, material);
       //places the floor plane slightly below the grid helper
       this.floor.position.z = -1;
       this.scene.add(this.floor)
-
 
       // renderer
       this.renderer = new THREE.WebGLRenderer();
@@ -72,9 +66,6 @@ export default {
       // this.controls.update();
 
       document.body.appendChild(this.renderer.domElement)
-
-
-
     },
     animate: function() {
       // this.controls.update();
@@ -91,7 +82,6 @@ export default {
       // this.camera.lookAt( this.scene.position );
       // this.renderer.render( this.scene, this.camera );
     },
-
   },
   mounted() {
     this.init()
