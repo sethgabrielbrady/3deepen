@@ -1,8 +1,14 @@
 <template>
-  <div id="container"></div>
+  <div id="container">
+    <p>X = {{paddleX}}</p>
+    <p>Y = {{paddleY}}</p>
+    <p>Z = {{paddleZ}}</p>
+  </div>
 </template>
 <script>
 import * as THREE from 'three'
+import DragControls from 'three-dragcontrols';
+
 
 export default {
   name: 'Breakout',
@@ -32,6 +38,10 @@ export default {
       test: null,
       sc: 0, //score
       target: null,
+      paddleX: null,
+      paddleY: null,
+      paddleZ: null,
+      dcontrols: null
     }
   },
   methods: {
@@ -46,6 +56,8 @@ export default {
       this.camera.position.z = 1000;
       this.camera.position.y = 1000;
       // this.camera.position.x = 100;
+
+
 
 
       this.scene = new THREE.Scene()
@@ -144,6 +156,27 @@ export default {
       }
     },
     render: function() {
+
+      if((this.paddle.position.z < 500-70) && (this.paddle.position.z < 500-70) ) {
+        this.dcontrols = new DragControls( [this.paddle, this.shot], this.camera, this.renderer.domElement );
+
+        this.dcontrols.addEventListener( 'dragstart', function (event) {
+          console.log("X = ", this.paddleX = event.object.position.x);
+          console.log("Y = ", this.paddleX = event.object.position.y);
+          console.log("Z = ", this.paddleX = event.object.position.z);
+          // event.object.material.color( 0xaaaaaa );
+        } );
+        this.dcontrols.addEventListener( 'dragend', function (event) {
+          console.log("X = ", this.paddleX = event.object.position.x);
+          console.log("Y = ", this.paddleX = event.object.position.y);
+          console.log("Z = ", this.paddleX = event.object.position.z);
+        } );
+      }else {
+        this.dcontrols = null
+        this.dcontrols.removeEventListener( 'dragstart')
+        this.dcontrols.removeEventListener( 'dragend')
+      }
+
       if(this.rightPressed && this.paddle.position.z < 500-70) {
         this.paddle.position.z += 14;
         this.shot.position.z = this.paddle.position.z;
@@ -189,9 +222,9 @@ export default {
       }
 
       // unset this for rotating camera
-      const timer = Date.now() * 0.0001;
-      this.camera.position.x = Math.cos(timer) * 800;
-      this.camera.position.z = Math.sin(timer) * 800;
+      // const timer = Date.now() * 0.0001;
+      // this.camera.position.x = Math.cos(timer) * 800;
+      // this.camera.position.z = Math.sin(timer) * 800;
       this.camera.lookAt( this.scene.position );
       this.renderer.render( this.scene, this.camera );
 

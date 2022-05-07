@@ -1,6 +1,7 @@
 <template>
   <div id="container"></div>
 </template>
+
 <script>
 import * as THREE from 'three'
 // import * as OrbitControls from 'three-orbit-controls'
@@ -28,13 +29,14 @@ export default {
         0.1,
         1000
       )
+
       this.camera.position.z = 800;
       this.scene = new THREE.Scene()
       this.scene.background = new THREE.Color( 0xf0f0f0 );
 
       //textures
       const loader = new THREE.TextureLoader();
-      const floorTexture = loader.load('https://mk0a2minutetabl7hq7i.kinstacdn.com/wp-content/uploads/2021/02/Celestial-Temple-Battle-Map-preview-Cropped-500x350.jpg');
+      const floorTexture = loader.load('https://threejsfundamentals.org/threejs/resources/images/wall.jpg');
 
       // Grid
       this.gridHelper = new THREE.GridHelper(1000,12,0xff0000, 0x0000ff);
@@ -42,7 +44,7 @@ export default {
       this.scene.add( this.gridHelper );
 
       // floor
-      const geometry = new THREE.PlaneGeometry(1000, 1000)
+      const geometry = new THREE.PlaneGeometry(1000, 1000, 1000)
       const material = new THREE.MeshBasicMaterial({
         map: floorTexture, side: THREE.DoubleSide
       });
