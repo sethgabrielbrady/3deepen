@@ -1,6 +1,5 @@
 <template>
   <div id="3dmap" style="position: relative;">
-    <!-- <Stars /> -->
     <div style="position: absolute;">
       <p  style="transform:translateX(calc(50vw - 64px)); positioon: relative; color:white;">World Map</p><br>
       <div style="position: relative; color: white;">
@@ -9,9 +8,13 @@
         <button @click="gridToggle">Grid</button><br>
         <input class="text-black" v-model="gridInput" placeholder="Gridcount"/>
         <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold px-2 mt-4 rounded" @click="updateGrid">Update</button><br>
-        <input class="text-black" v-model="imageInput" placeholder="Image Url"/>
-        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold px-2 mt-4 rounded" @click="updateMapImage">Update</button><br>
-
+        <label for="image-upload" class="">Change Map Image</label><br>
+        <input type="file" accept="image/*" class="text-black" id="image-upload" @change="showPreview($event)" />
+        <ul v-if="imageArray.length > 0">
+          <li v-for="image in imageArray" :key="image" style="text-decoration: none; display: inline-block;">
+            <img :src="image" @click="updateWithSelectedImage(image)" class="preview-image"  width="40px" height="40px"/>
+          </li>
+      </ul>
       </div>
     </div>
   </div>
@@ -20,7 +23,9 @@
 <script>
 import * as THREE from '../../node_modules/three/build/three.module.js';
 import DragControls from 'three-dragcontrols';
-// import oc from 'three-orbit-controls'
+import oc from 'three-orbit-controls'
+
+const OrbitControls = oc(THREE);
 
 export default {
   name: 'Map',
@@ -37,7 +42,6 @@ export default {
       floor: null,
       model: null,
       gridHelper: null,
-      OgGrid: 100,
       gridInput: 100,
       gridColor: 0xf0f0f0,
       backgroundColor: 0x000000,
@@ -45,23 +49,31 @@ export default {
       floorTexture: null,
       geometry: null,
       materials: null,
-      mouse: null,
       vector: null,
       pos: null,
       cube: null,
-      shiftPressed: false,
-      imageInput: ""
+      imageInput: "",
+      imageArray: [],
+      selectedImage: null,
+      dragControls: null,
+      orbitControl: null,
+      toggleDrag: false
     }
   },
   computed: {
     gridCount () {
       return this.gridInput
-    },
-    getImage () {
-      return this.imageInput
     }
   },
   methods: {
+    showPreview(event){
+      if (event.target.files.length > 0) {
+        var src = URL.createObjectURL(event.target.files[0]);
+        this.imageArray.push(src);
+        this.imageInput = src
+        this.updateMapImage();
+      }
+    },
     gridToggle () {
       this.gridVisible = !this.gridVisible
       return this.gridVisible
@@ -70,15 +82,17 @@ export default {
       this.scene.remove(this.cube);
       this.scene.remove(this.gridHelper);
       this.gridSetup();
-      this.addCube()
+      this.addMarker()
       this.scene.add(this.gridHelper);
       this.scene.add(this.cube);
     },
+    updateWithSelectedImage(img) {
+      this.imageInput = img
+      this.updateMapImage();
+    },
     updateMapImage () {
-      alert(this.getImage)
       this.scene.remove(this.model)
       this.textures()
-      alert("modelRemoved")
       this.addModel();
     },
     centerPerspective () {
@@ -107,13 +121,13 @@ export default {
     },
     textures () {
       const loader = new THREE.TextureLoader();
-      if (this.getImage ) {
-        alert("get image", this.getImage)
-        this.floorTexture = loader.load(this.getImage);
+      if (this.selectedImage) {
+        this.floorTexture = loader.load(this.selectedImage);
+      } else if (this.imageInput ) {
+        this.floorTexture = loader.load(this.imageInput);
       } else {
         this.floorTexture = loader.load('https://cdnb.artstation.com/p/assets/images/images/040/703/743/large/jay-grizguts-dndmapsmol.jpg');
       }
-
     },
     gridSetup () {
       this.gridHelper = new THREE.GridHelper(100,this.gridCount,0xff0000, this.gridColor);
@@ -124,12 +138,12 @@ export default {
       let model = null;
       this.geometry = new THREE.BoxGeometry(100, 100, 1);
       this.materials = [
-        new THREE.MeshLambertMaterial( { color: 0xff0000 } ),
-        new THREE.MeshLambertMaterial( { color: 0xff0000 } ),
-        new THREE.MeshLambertMaterial( { color: 0xff0000 } ),
-        new THREE.MeshLambertMaterial( { color: 0xff0000 } ),
-        new THREE.MeshLambertMaterial( { map: this.floorTexture } ),
-        new THREE.MeshLambertMaterial( { map: this.floorTexture} )
+        new THREE.MeshBasicMaterial( { color: 0xff0000 } ),
+        new THREE.MeshBasicMaterial( { color: 0xff0000 } ),
+        new THREE.MeshBasicMaterial( { color: 0xff0000 } ),
+        new THREE.MeshBasicMaterial( { color: 0xff0000 } ),
+        new THREE.MeshBasicMaterial( { map: this.floorTexture, opacity: 0.5 } ),
+        new THREE.MeshBasicMaterial( { map: this.floorTexture, opacity: 0.5} )
       ];
         model = new THREE.Mesh(this.geometry, this.materials);
         console.log("width", model.geometry.parameters.height)
@@ -154,7 +168,7 @@ export default {
       wireGeo.position.z = 45;
       this.scene.add(wireGeo)
     },
-    addCube () {
+    addMarker () {
       // strting point for adding tokens
       let gridUnit = (100 / this.gridInput)
       let cubegeo = new THREE.BoxGeometry(gridUnit, gridUnit, 5);
@@ -184,109 +198,59 @@ export default {
       this.renderer.setPixelRatio(window.devicePixelRatio);
       this.renderer.setSize(window.innerWidth, window.innerHeight);
     },
-    logValues() {
-      console.log(this.camera.position.x, this.camera.position.z, this.camera.position.y)
-    },
-    rotateModel() {
-      // const timer = Date.now() * 0.0002;
-      // this.camera.position.x = Math.cos(timer) * 800;
-      // this.camera.position.y = Math.sin(timer) * 800;
-      this.camera.rotation.x += 0.005
-      this.camera.rotation.y += 0.005
-      this.camera.lookAt( this.scene.position );
-    },
-    addDragControls () {
-      const dcontrols = new DragControls( this.cube, this.camera, this.renderer );
-      dcontrols.addEventListener( 'dragstart', function ( event ) {
-        event.object.material.emissive.set( 0xaaaaaa );
-      } );
-      dcontrols.addEventListener( 'dragend', function ( event ) {
-        event.object.material.emissive.set( 0x000000 );
-      } );
-    },
-    // showChar(event){
-    //   const e = event
-    //   const OrbitControls = oc(THREE);
-    //   let controls = new DragControls( [this.cube], this.camera, this.renderer.domElement );
+    shiftPressed(e){
+      if (e.shiftKey) {
+        this.toggleDrag = !this.toggleDrag
+        console.log("togg",this.toggleDrag)
 
-    //   if (e.shiftKey) {
-    //     this.shiftPressed = true;
-
-    //   }else {
-    //     this.shiftPressed = false;
-    //   }
-
-    //   if (this.shiftPressed) {
-    //     //orbit controls
-    //     controls = new OrbitControls(this.camera, this.renderer.domElement)
-    //     controls.update()
-    //   } else {
-    //     controls.addEventListener( 'dragstart', function (event) {
-    //     event.object.material.color( 0xaaaaaa );
-    //       } );
-    //     controls.addEventListener( 'dragend', function (event) {
-    //     event.object.material.color( 0x000000 );
-    //       } );
-    //   }
-    // },
+      }
+    },
     init: function() {
-      // create a new scene
       this.scene = new THREE.Scene()
       this.scene.background = new THREE.Color( this.backgroundColor )
-      // add the camera
       this.cameraSetup()
-      // add the lights
       this.lightsSetup()
-      // ready the textures
       this.textures()
-      // add the grid
       this.gridSetup()
       this.scene.add( this.gridHelper );
-      // add geometry and materials
       this.addModel()
-      // this.scene.add(this.floor)
+      this.addMarker ()
       // this.addWireframeAirspace()
-      // renderer
-
       this.addRenderer()
-      //orbit controls
-      // const OrbitControls = oc(THREE);
-      // const controls = new OrbitControls(this.camera, this.renderer.domElement)
-      // controls.update()
-      this.addCube();
 
-      // const dcontrols = new DragControls( [this.cube], this.camera, this.renderer.domElement );
-      // const map = document.getElementById("3dmap")
-      // map.appendChild(this.renderer.domElement)
-      // dcontrols.addEventListener( 'dragstart', function (event) {
-      //   event.object.material.color( 0xaaaaaa );
-      // } );
-      // dcontrols.addEventListener( 'dragend', function (event) {
-      //   event.object.material.color( 0x000000 );
-      // } );
-      // add to dom
+      this.dragControls = new DragControls( [this.cube], this.camera, this.renderer.domElement );
+      this.dragControls.addEventListener( 'dragstart', function () {});
+      this.dragControls.addEventListener( 'dragend', function () {});
+      this.dragControls.enabled = false
+
+      this.orbitControls = new OrbitControls(this.camera, this.renderer.domElement)
+
       const map = document.getElementById("3dmap")
       map.appendChild(this.renderer.domElement)
     },
     animate () {
-      // this.showChar(keydown);
       this.render()
       this.renderer.render(this.scene, this.camera)
       requestAnimationFrame( this.animate )
     },
     render () {
-      // document.addEventListener("keydown", this.showChar, false);
-      // document.addEventListener("keyup", this.showChar, false);
+      document.addEventListener("keydown", this.shiftPressed);
+      // document.addEventListener("keyup", this.shiftPressed, false);
 
-
-      // this.rotateModel()
       //toggle grid
       if (this.gridVisible){
         this.scene.add( this.gridHelper );
       } else {
         this.scene.remove(this.gridHelper);
       }
-      // this.logValues()
+
+      if (this.toggleDrag) {
+        this.dragControls.enabled = true;
+        this.orbitControls.enabled = false;
+      }else {
+        this.orbitControls.enabled = true;
+        this.dragControls.enabled = false;
+      }
     },
   },
   mounted() {
@@ -295,3 +259,9 @@ export default {
   }
 }
 </script>
+
+<style>
+.preview-image:hover {
+  transform: scale(1.2);
+}
+</style>
