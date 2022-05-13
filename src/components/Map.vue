@@ -1,20 +1,33 @@
 <template>
   <div id="3dmap" style="position: relative;">
-    <div style="position: absolute;">
+    <div style="position: absolute; background: black; opacity: .8; padding-bottom: 1rem; p2">
       <p  style="transform:translateX(calc(50vw - 64px)); positioon: relative; color:white;">World Map</p><br>
       <div style="position: relative; color: white;">
-        <button @click="centerPerspective">Center</button><br>
-        <button @click="sidePerspective">Side</button><br>
-        <button @click="gridToggle">Grid</button><br>
-        <input class="text-black" v-model="gridInput" placeholder="Gridcount"/>
-        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold px-2 mt-4 rounded" @click="updateGrid">Update</button><br>
+        <p v-if="toggleDrag" style="font-size: 1.5rem; background-color: orange; width: 100px;">Drag</p>
+        <p v-else style="font-size: 1.5rem; background-color: blue; width: 100px;">Orbit</p>
+        <br>
+        <button  class="bg-blue-500 hover:bg-blue-700 text-white font-bold px-2 mt-4 mr-2 rounded" @click="centerPerspective">Center</button>
+        <button  class="bg-blue-500 hover:bg-blue-700 text-white font-bold px-2 mt-4 rounded" @click="sidePerspective">Side</button><br>
+        <button @click="gridToggle">Grid Toggle</button><br>
+        <input class="text-black" v-model="gridInput" placeholder="Gridcount" style="width: 50px;"/>
+        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold px-2 mt-4 rounded" @click="updateGrid">Update</button>
+        <br>
         <label for="image-upload" class="">Change Map Image</label><br>
         <input type="file" accept="image/*" class="text-black" id="image-upload" @change="showPreview($event)" />
         <ul v-if="imageArray.length > 0">
-          <li v-for="image in imageArray" :key="image" style="text-decoration: none; display: inline-block;">
-            <img :src="image" @click="updateWithSelectedImage(image)" class="preview-image"  width="40px" height="40px"/>
+          <li v-for="image in imageArray" :key="image" style="text-decoration: none; display: inline-block; width:40px; height: 40px; overflow:hidden;">
+            <img :src="image" @click="updateWithSelectedImage(image)" class="preview-image"  width="auto" height="auto"/>
           </li>
-      </ul>
+      </ul><br>
+      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold px-2 mt-4 rounded" @click="toggleMarkerModal = ! toggleMarkerModal">Add marker</button><br>
+      <div v-if="toggleMarkerModal" style="background-color: white;">
+        <input class="text-black" v-model="markerSize" placeholder="X" style="width: 2rem;"/>
+        <input class="text-black" v-model="markerSize" placeholder="Y" style="width: 2rem;"/>
+        <input class="text-black" v-model="markerSize" placeholder="Z" style="width: 2rem;"/><br>
+
+        <input class="text-black" v-model="markerColor" placeholder="Marker Color" style="width: max-content;"/><br>
+        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold px-2 mt-4 rounded" @click="addMarker()">Add marker</button><br>
+      </div>
       </div>
     </div>
   </div>
@@ -57,7 +70,14 @@ export default {
       selectedImage: null,
       dragControls: null,
       orbitControl: null,
-      toggleDrag: false
+      toggleDrag: false,
+      markerArray: [],
+      toggleMarkerModal: false,
+      label:null,
+      imgx: null,
+      imW:null,
+      // imH: Number
+      mapSceneData: {}
     }
   },
   computed: {
@@ -65,14 +85,29 @@ export default {
       return this.gridInput
     }
   },
+  created() {
+    // const localImages = localStorage.getItem("images")
+    // this.imageArray = localImages
+  },
   methods: {
     showPreview(event){
       if (event.target.files.length > 0) {
         var src = URL.createObjectURL(event.target.files[0]);
         this.imageArray.push(src);
         this.imageInput = src
-        this.updateMapImage();
+        localStorage.setItem("images", this.imageArray);
+        console.log(localStorage.getItem("images"))
       }
+    },
+    getImageWidth(imgSrc){
+      var img = new Image();
+      img.src = imgSrc;
+      img.onload = function(){
+      }
+      this.imW = img.naturalWidth
+      this.imH = img.naturalHeight
+
+      return [img.naturalWidth, img.naturalHeight]
     },
     gridToggle () {
       this.gridVisible = !this.gridVisible
@@ -82,18 +117,20 @@ export default {
       this.scene.remove(this.cube);
       this.scene.remove(this.gridHelper);
       this.gridSetup();
-      this.addMarker()
       this.scene.add(this.gridHelper);
       this.scene.add(this.cube);
     },
     updateWithSelectedImage(img) {
       this.imageInput = img
-      this.updateMapImage();
+      let dims = this.getImageWidth(img)
+      console.log("1", dims)
+      this.updateMapImage(dims)
     },
-    updateMapImage () {
+    updateMapImage (dim) {
       this.scene.remove(this.model)
       this.textures()
-      this.addModel();
+      console.log("2",dim)
+      this.addModel(dim);
     },
     centerPerspective () {
       this.camera.position.x = 0;
@@ -115,9 +152,6 @@ export default {
     lightsSetup () {
       let ambientLight = new THREE.AmbientLight( 0xffffff );
       this.scene.add( ambientLight );
-      // let light = new THREE.PointLight( 0xf0f0f0 );
-      // light.position.set( 1000, 1000, 1000 );
-      // this.scene.add(light);
     },
     textures () {
       const loader = new THREE.TextureLoader();
@@ -134,20 +168,33 @@ export default {
       this.gridHelper.rotation.x = 1.5708;
       this.gridHelper.position.z = -4.5;
     },
-    addModel () {
-      let model = null;
-      this.geometry = new THREE.BoxGeometry(100, 100, 1);
+    addModel(xy) {
+      console.log("3", xy)
+      let model = null
+      if (xy) {
+        console.log("4", xy)
+        this.geometry = new THREE.BoxGeometry((xy[0]/10), (xy[1]/10), 1);
+      }else {
+        this.geometry = new THREE.BoxGeometry(100, 100, 1);
+        this.mapSceneData.mapGeoX = 100;
+        this.mapSceneData.mapGeoY = 100;
+        this.mapSceneData.mapGeoZ = 1;
+
+      }
       this.materials = [
-        new THREE.MeshBasicMaterial( { color: 0xff0000 } ),
-        new THREE.MeshBasicMaterial( { color: 0xff0000 } ),
-        new THREE.MeshBasicMaterial( { color: 0xff0000 } ),
-        new THREE.MeshBasicMaterial( { color: 0xff0000 } ),
-        new THREE.MeshBasicMaterial( { map: this.floorTexture, opacity: 0.5 } ),
-        new THREE.MeshBasicMaterial( { map: this.floorTexture, opacity: 0.5} )
+        new THREE.MeshPhongMaterial( { color: 0xff0000 } ),
+        new THREE.MeshPhongMaterial( { color: 0xff0000 } ),
+        new THREE.MeshPhongMaterial( { color: 0xff0000 } ),
+        new THREE.MeshPhongMaterial( { color: 0xff0000 } ),
+        new THREE.MeshPhongMaterial( {map: this.floorTexture} ),
+        new THREE.MeshPhongMaterial( { color: 0xff0000 } )
+
       ];
+        this.mapSceneData.mapMatsArray = 0xff0000
+
         model = new THREE.Mesh(this.geometry, this.materials);
-        console.log("width", model.geometry.parameters.height)
-        //places the floor plane slightly below the grid helper
+
+
         model.position.z = -5.05;
 
       this.model = model;
@@ -157,52 +204,68 @@ export default {
       let containerGeo = new THREE.BoxGeometry(99.9, 99.9, 100);
       //places the floor plane slightly below the grid helper
       let wire = [
-        new THREE.MeshPhongMaterial({color: 0x000000, wireframe: false, opacity: .15, transparent: true} ),
-        new THREE.MeshPhongMaterial({color: 0x000000, wireframe: false, opacity: .15, transparent: true} ),
-        new THREE.MeshPhongMaterial({color: 0xff00ff, wireframe: false, opacity: .15, transparent: true} ),
-        new THREE.MeshPhongMaterial({color: 0xff00ff, wireframe: false, opacity: .15, transparent: true} ),
-        new THREE.MeshPhongMaterial({color: 0xff00ff, wireframe: false, opacity: .15, transparent: true} ),
-        new THREE.MeshPhongMaterial({color: 0xff00ff, wireframe: false, opacity: .15, transparent: true} ),
+        new THREE.MeshPhongMaterial({color: 0x000000, wireframe: true, opacity: .15, transparent: true} ),
+        new THREE.MeshPhongMaterial({color: 0x000000, wireframe: true, opacity: .15, transparent: true} ),
+        new THREE.MeshPhongMaterial({color: 0xff00ff, wireframe: true, opacity: .15, transparent: true} ),
+        new THREE.MeshPhongMaterial({color: 0xff00ff, wireframe: true, opacity: .15, transparent: true} ),
+        new THREE.MeshPhongMaterial({color: 0xff00ff, wireframe: true, opacity: .15, transparent: true} ),
+        new THREE.MeshPhongMaterial({color: 0xff00ff, wireframe: true, opacity: .15, transparent: true} ),
       ]
       let wireGeo = new THREE.Mesh(containerGeo, wire);
       wireGeo.position.z = 45;
       this.scene.add(wireGeo)
     },
     addMarker () {
-      // strting point for adding tokens
+      // let markerPos = {};
+      const randomColor = Math.floor(Math.random()*16777215)
+      alert(randomColor)
       let gridUnit = (100 / this.gridInput)
       let cubegeo = new THREE.BoxGeometry(gridUnit, gridUnit, 5);
       let materials = [
-        new THREE.MeshBasicMaterial( { color: 0xff0000 } ),
-        new THREE.MeshBasicMaterial( { color: 0xff0000 } ),
-        new THREE.MeshBasicMaterial( { color: 0xff0000 } ),
-        new THREE.MeshBasicMaterial( { color: 0xff0000 } ),
-        new THREE.MeshBasicMaterial( { color: 0xff0000 } ),
-        new THREE.MeshBasicMaterial( { color: 0xff0000 } ),
+        new THREE.MeshBasicMaterial( { color: randomColor } ),
+        new THREE.MeshBasicMaterial( { color: randomColor } ),
+        new THREE.MeshBasicMaterial( { color: randomColor } ),
+        new THREE.MeshBasicMaterial( { color: randomColor } ),
+        new THREE.MeshBasicMaterial( { color: randomColor } ),
+        new THREE.MeshBasicMaterial( { color: randomColor } ),
       ]
       this.cube = new THREE.Mesh(cubegeo, materials);
-      //places the floor plane slightly below the grid helper
       this.cube.position.z = -2;
       let panelSize = 1 * (gridUnit / 2 );
-      // let halfGrid = ( (100 / this.gridInput) / 2);
       this.cube.position.y = ( (-1 * (panelSize) ) * 2)
       this.cube.position.x = panelSize
-      console.log( "x=", this.cube.position.x, ", y=",this.cube.position.y)
-      console.log("color", this.cube)
-      this.scene.add(this.cube);
+      this.markerArray.push(this.cube);
+      alert("new marker added");
+      // markerPos = {
+      //   x: this.cube.position.x,
+      //   y: this.cube.position.y,
+      //   z: this.cube.position.z
+      // }
+
+      this.markerArray.forEach(marker => {
+        this.scene.add(marker);
+      })
       // panelSize
     },
+    // addSprite () {
+    //   const loader = new THREE.TextureLoader();
+    //   var treetexture = loader.load( this.imageInput );
+    //   treetexture.magFilter = THREE.NearestFilter;
+    //   var treematerial = new THREE.Material( { map: treetexture,color:0x000000, transparent:true} );
+    //   var treesprite = new THREE.Sprite( treematerial );
+    //   treesprite.scale.set( 10, 10, 1);
+    //   treesprite.position.set(0, 0, .5);
+    //   this.scene.add(treesprite);
+    // },
     addRenderer () {
       this.renderer = new THREE.WebGLRenderer();
-      this.renderer.setClearColor(0x000000);
+      this.renderer.setClearColor(0xffffff);
       this.renderer.setPixelRatio(window.devicePixelRatio);
       this.renderer.setSize(window.innerWidth, window.innerHeight);
     },
     shiftPressed(e){
       if (e.shiftKey) {
         this.toggleDrag = !this.toggleDrag
-        console.log("togg",this.toggleDrag)
-
       }
     },
     init: function() {
@@ -214,11 +277,14 @@ export default {
       this.gridSetup()
       this.scene.add( this.gridHelper );
       this.addModel()
-      this.addMarker ()
-      // this.addWireframeAirspace()
+      // this.addSprite()
+
+
+      // this.addMarker ()
+      this.addWireframeAirspace()
       this.addRenderer()
 
-      this.dragControls = new DragControls( [this.cube], this.camera, this.renderer.domElement );
+      this.dragControls = new DragControls( this.markerArray, this.camera, this.renderer.domElement );
       this.dragControls.addEventListener( 'dragstart', function () {});
       this.dragControls.addEventListener( 'dragend', function () {});
       this.dragControls.enabled = false
@@ -236,6 +302,13 @@ export default {
     render () {
       document.addEventListener("keydown", this.shiftPressed);
       // document.addEventListener("keyup", this.shiftPressed, false);
+
+      // check z position of markers
+      this.markerArray.forEach(marker => {
+        if (marker.position.z > -2 || marker.position.z < -2){
+          marker.position.z = -2
+        }
+      })
 
       //toggle grid
       if (this.gridVisible){
@@ -265,3 +338,4 @@ export default {
   transform: scale(1.2);
 }
 </style>
+

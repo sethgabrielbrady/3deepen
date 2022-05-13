@@ -6,8 +6,7 @@
     <a href="/#/textured-floor">Textured Floor </a><br>
     <a href="/#/map">Map </a><br>
     <a href="/#/drag-controls">Drag Controls </a><br>
-
-
+    <a href="/#/sprite-fight">Sprite Fight </a><br>
   </div>
 
 </template>
