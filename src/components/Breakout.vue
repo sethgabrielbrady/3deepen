@@ -1,8 +1,6 @@
 <template>
   <div id="container">
-    <p>X = {{paddleX}}</p>
-    <p>Y = {{paddleY}}</p>
-    <p>Z = {{paddleZ}}</p>
+    <p>Breakout</p>
   </div>
 </template>
 <script>
@@ -53,9 +51,9 @@ export default {
       this.camera.position.set(0,2.5,2.5); // Set position like this
       this.camera.lookAt(new THREE.Vector3(-.5,0,0)); // Set look at coordinate like this
 
-      this.camera.position.z = 1000;
-      this.camera.position.y = 1000;
-      // this.camera.position.x = 100;
+      this.camera.position.x= 1000;
+      this.camera.position.y= 1000;
+      // this.camera.position.x = 1.5633;
 
 
 

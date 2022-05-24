@@ -4,9 +4,10 @@ import Home from './components/Home.vue'
 import Breakout from './components/Breakout.vue'
 import TexturedFloor from './components/TexturedFloor.vue'
 import Map from './components/Map.vue'
-import Webxr from './components/Webxr.vue'
 import DragControls from './components/DragControls.vue'
 import SpriteFight from './components/SpriteFight.vue'
+import TwinStick from './components/TwinStick.vue'
+
 
 export const routes = [
   { path: '/', component: Home },
@@ -16,5 +17,5 @@ export const routes = [
   { path: '/map', component: Map },
   { path: '/drag-controls', component: DragControls },
   { path: '/sprite-fight', component: SpriteFight },
-  { path: '/webxr', component: Webxr },
+  { path: '/twin-stick', component: TwinStick },
 ]
