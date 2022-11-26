@@ -175,10 +175,10 @@ export default {
         this.dcontrols.removeEventListener( 'dragend')
       }
 
-      if(this.rightPressed && this.paddle.position.z < 500-70) {
+      if (this.rightPressed && this.paddle.position.z < 500-70) {
         this.paddle.position.z += 14;
         this.shot.position.z = this.paddle.position.z;
-      } else if(this.leftPressed && this.paddle.position.z > -500 + 70) {
+      } else if (this.leftPressed && this.paddle.position.z > -500 + 70) {
         this.paddle.position.z -= 14;
         this.shot.position.z = this.paddle.position.z;
       }

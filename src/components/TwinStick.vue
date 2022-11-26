@@ -63,12 +63,8 @@ export default {
       this.camera.position.y= 1000;
       // this.camera.position.x = 1.5633;
 
-
-
-
       this.scene = new THREE.Scene()
       this.scene.background = new THREE.Color( 0xf0f0f0 );
-
 
       // Grid
       this.gridHelper = new THREE.GridHelper(1000, 12);
@@ -84,17 +80,13 @@ export default {
       this.scene.add( this.paddle );
       this.scene.add( this.target );
 
-
-
       let shotGeo = new THREE.BoxGeometry( 25, 25, 25 );
       this.shotMatr = new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0  } );
       this.shot = new THREE.Mesh( shotGeo, this.shotMatr);
-      this.shot.position.x = 5000;
+      // this.shot.position.x = 5000;
       this.shot.position.y = -50;
       this.shot.position.z = 20;
       this.scene.add( this.shot );
-
-
       // Lights
       let ambientLight = new THREE.AmbientLight( 0xf03ff0 );
       this.scene.add( ambientLight );
@@ -109,15 +101,8 @@ export default {
       this.renderer.setSize(window.innerWidth, window.innerHeight);
 
       document.body.appendChild(this.renderer.domElement)
-
-
       // window.addEventListener( 'resize', onWindowResize, false );
 
-    },
-    setShotPos () {
-      this.shot.position.z = this.paddle.position.z
-      this.shot.position.x = this.paddle.position.x;
-      this.shotFired = 1;
     },
     animate: function() {
       requestAnimationFrame( this.animate );
@@ -134,49 +119,23 @@ export default {
       }else if(this.downPressed && this.paddle.position.x > -500 + 70) {
         this.paddle.position.x += 14;
       }
-      if(this.shotUpPressed ) {
+      if(this.shotUpPressed && this.shotPressed === false && this.shotFired === 0 ) {
         if (this.shotFired === 0) {
-          this.setShotPos()
-          if( this.shot.position.x > -500){
-            this.shot.position.x -= 40
-          }
+          this.shot.position.z = this.paddle.position.z
+          this.shot.position.x = this.paddle.position.x;
+          this.shotFired = 1
         }
+        this.shotPressed = true
       }
-      // if(this.shotDownPressed ) {
-      //   if (this.shotFired === 0) {
-      //     this.setShotPos()
-      //   }
-      //   if( this.shot.position.x < -500){
-      //     this.shot.position.x += 40
-      //   }
-      // }
 
-      // if(this.shotDownPressed ) {
-      //   if (this.shotFired === 0) {
-      //     this.setShotPos()
-      //   }
-      //   if( this.shot.position.x > -500){
-      //     this.shot.position.x -= 40
-      //   }
-      // }
-      // if(this.shotDownPressed ) {
-      //   if (this.shotFired === 0) {
-      //     this.setShotPos()
-      //   }
-      //   if( this.shot.position.x > -500){
-      //     this.shot.position.x -= 40
-      //   }
-      // }
-
-      if (this.shot.position.x < -500){
-        this.shot.position.x = 50000
-        this.shotPressed = false;
-        this.shotFired = 0;
+      if(this.shotPressed && this.shot.position.x > -500 && this.shotFired === 1){
+        this.shot.position.x -= 40
       }
-      if (this.shot.position.x < -500){
-        this.shot.position.x = 50000
+      if(this.shotPressed && this.shot.position.x <= -500){
         this.shotPressed = false;
-        this.shotFired = 0;
+      }
+      if(!this.shotPressed && this.shot.position.x <= -500) {
+        this.shotFired = 0
       }
 
       this.camera.lookAt( this.scene.position );
@@ -225,7 +184,9 @@ export default {
       else if (e.keyCode == 83) {
         this.downPressed = false;
       }
-      //
+      else if (e.keyCode == 73 ) {
+        this.shotUpPressed = false
+      }
     }
   },
   mounted() {

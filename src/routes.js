@@ -7,6 +7,8 @@ import Map from './components/Map.vue'
 import DragControls from './components/DragControls.vue'
 import SpriteFight from './components/SpriteFight.vue'
 import TwinStick from './components/TwinStick.vue'
+import BattlePuck from './Games/BattlePuck/index.vue'
+import PhysicsTest from './components/PhysicsTest.vue'
 
 
 export const routes = [
@@ -18,4 +20,6 @@ export const routes = [
   { path: '/drag-controls', component: DragControls },
   { path: '/sprite-fight', component: SpriteFight },
   { path: '/twin-stick', component: TwinStick },
+  { path: '/battle-puck', component: BattlePuck },
+  { path: '/physics-test', component: PhysicsTest },
 ]
